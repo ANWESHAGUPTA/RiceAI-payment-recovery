@@ -1,0 +1,375 @@
+{
+  "name": "My workflow",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "stripe-payment-failed",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "9a7a67c6-4b72-473b-b75a-67ae7ef87fdb",
+      "name": "Webhook",
+      "webhookId": "14ac6068-dd3f-469b-99f4-cc9dbf130dd6"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.anthropic.com/v1/messages",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "x-api-key",
+              "value": "YOUR_CLAUDE_API_KEY_HERE"
+            },
+            {
+              "name": "anthropic-version",
+              "value": "2023-06-01"
+            },
+            {
+              "name": "content-type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ \"model\": \"claude-sonnet-4-20250514\", \"max_tokens\": 1024, \"messages\": [{\"role\": \"user\", \"content\": \"Analyze this Stripe payment failure and respond in JSON only with keys: risk_score (1-10), failure_type, recovery_strategy, urgency, email_subject, email_body. Event: \" + JSON.stringify($json.body)}] }) }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        208,
+        0
+      ],
+      "id": "ac9a62ee-5cce-49c7-aa9a-4bb82c3f54d7",
+      "name": "HTTP Request"
+    },
+    {
+      "parameters": {
+        "jsCode": "\nconst response = $input.first().json;\nconsole.log(response)\nconst text = response.content[0].text;\nconsole.log(text)\n// Remove the ```json wrapper if present\nconst cleanJson = text.replace(/```json\\n?/g, '').replace(/```\\n?/g, '').trim();\nconsole.log(cleanJson)\nconst parsed = JSON.parse(cleanJson);\n\nreturn [{\n  json: {\n    risk_score: parsed.risk_score,\n    failure_type: parsed.failure_type,\n    recovery_strategy: parsed.recovery_strategy,\n    urgency: parsed.urgency,\n    email_subject: parsed.email_subject,\n    email_body: parsed.email_body,\n    original_event: $('Webhook').first().json.body\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        416,
+        0
+      ],
+      "id": "a989d47f-4c43-4f99-83df-e9f15bedc4cd",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1OXpirCN3UhzB8THuXc7qxIMlXcXECABR8BF8P0UPUdo",
+          "mode": "list",
+          "cachedResultName": "Rice - Payment Recovery Log",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1OXpirCN3UhzB8THuXc7qxIMlXcXECABR8BF8P0UPUdo/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1OXpirCN3UhzB8THuXc7qxIMlXcXECABR8BF8P0UPUdo/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Timestamp ": "={{ new Date().toLocaleString('en-US', {timeZone: 'America/New_York'}) }}",
+            "Customer ID": "={{ $json.original_event.data.object.customer || 'No customer ID' }}",
+            "Amount ": "={{ ($json.original_event.data.object.amount / 100).toFixed(2) }}",
+            "Currency ": "={{ $json.original_event.data.object.currency.toUpperCase() }}",
+            "Failure Type ": "={{ $json.failure_type }}",
+            "AI Risk Score": "={{ $json.risk_score }}/10",
+            "Urgency ": "={{ $json.urgency.toUpperCase() }}",
+            "Recovery Strategy": "={{ $json.recovery_strategy }}",
+            "Recovery Status": "Pending",
+            "Email Subject": "={{ $json.email_subject }}",
+            "Email Body": "={{ $json.email_body }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Timestamp ",
+              "displayName": "Timestamp ",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Customer ID",
+              "displayName": "Customer ID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Amount ",
+              "displayName": "Amount ",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Currency ",
+              "displayName": "Currency ",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Failure Type ",
+              "displayName": "Failure Type ",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "AI Risk Score",
+              "displayName": "AI Risk Score",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Urgency ",
+              "displayName": "Urgency ",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Recovery Strategy",
+              "displayName": "Recovery Strategy",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Email Subject",
+              "displayName": "Email Subject",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Email Body",
+              "displayName": "Email Body",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Recovery Status",
+              "displayName": "Recovery Status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        624,
+        -160
+      ],
+      "id": "c4e6ed95-dbf0-49af-b3e7-675174ace3bb",
+      "name": "Append row in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "zF8ToVnPGuIA3kMF",
+          "name": "Google Sheets OAuth2 API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "select": "channel",
+        "channelId": {
+          "__rl": true,
+          "value": "#revenue-alerts",
+          "mode": "name"
+        },
+        "text": "=🚨 *Payment Failure* | Risk: {{ $json.risk_score }}/10 | {{ $json.urgency.toUpperCase() }}\n\nCustomer {{ $json.original_event.data.object.customer || 'No customer ID' }}— ${{ ($json.original_event.data.object.amount / 100).toFixed(2) }} {{ $json.original_event.data.object.currency.toUpperCase() }} failed ({{ $json.failure_type }})\nAction: {{ $json.recovery_strategy }}\n\n@revenue-ops @cs-team — if unresolved within 48hrs, escalate to Account Management.",
+        "otherOptions": {}
+      },
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.4,
+      "position": [
+        624,
+        0
+      ],
+      "id": "5b2001cd-ea9a-4633-98bd-a834dd52bf8e",
+      "name": "Send a message",
+      "webhookId": "9652b73d-aab7-4354-9927-f81b87b94661",
+      "credentials": {
+        "slackOAuth2Api": {
+          "id": "kA537HWqpFdVyTrl",
+          "name": "Slack account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "email": "={{ $json.original_event.data.object.customer_email || 'test-recovery@rice-demo.com' }}",
+        "additionalFields": {
+          "companyName": "Stripe Customer",
+          "lastName": "={{ $json.original_event.data.object.customer_name || 'Payment Recovery - ' + new Date().toLocaleDateString() }}"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.hubspot",
+      "typeVersion": 2.2,
+      "position": [
+        656,
+        144
+      ],
+      "id": "b4240937-adf0-40e2-b1ee-cbe5f34069c7",
+      "name": "Create or update a contact",
+      "credentials": {
+        "hubspotOAuth2Api": {
+          "id": "6nsRZqcuV79WeXA0",
+          "name": "HubSpot OAuth2 API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "resource": "ticket",
+        "pipelineId": "0",
+        "stageId": "3477731012",
+        "ticketName": "=Payment Failure — {{ $('Code in JavaScript').first().json.failure_type }} — Risk {{ $('Code in JavaScript').first().json.risk_score }}/10",
+        "additionalFields": {
+          "description": "=Contact ID: {{ $json.vid }}\nCustomer Email: {{ $('Code in JavaScript').first().json.original_event.data.object.customer_email || 'test-recovery@rice-demo.com' }}\nFailure Type: {{ $('Code in JavaScript').first().json.failure_type }}\nUrgency: {{ $('Code in JavaScript').first().json.urgency }}\nRecovery Strategy: {{ $('Code in JavaScript').first().json.recovery_strategy }}\n\nA contact has been created for this customer. Escalate to Account Management if unresolved within 48hrs."
+        }
+      },
+      "type": "n8n-nodes-base.hubspot",
+      "typeVersion": 2.2,
+      "position": [
+        864,
+        144
+      ],
+      "id": "f816b97b-4972-491f-9733-e80f30abe7e6",
+      "name": "Create a ticket",
+      "credentials": {
+        "hubspotOAuth2Api": {
+          "id": "6nsRZqcuV79WeXA0",
+          "name": "HubSpot OAuth2 API"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "Append row in sheet",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Create or update a contact",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create or update a contact": {
+      "main": [
+        [
+          {
+            "node": "Create a ticket",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "09b3cf53-5cc0-459f-8aff-7521403ef50b",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "f0f003b1436eef5c434625e95cf4934cb2b3168585671263435cf1c4f5a7029e"
+  },
+  "id": "JhqAfo4dKu5qUnM9",
+  "tags": []
+}
