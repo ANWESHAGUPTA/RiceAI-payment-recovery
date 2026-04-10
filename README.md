@@ -123,6 +123,10 @@ The AI doesn't just classify. It **scores**, **recommends**, and **writes**. Eac
 ![HubSpot Tickets](screenshots/07-hubspot-ticket-pipeline.png)
 *Support ticket auto generated with linked contact ID and escalation instructions*
 
+### 8. n8n Pipeline
+![N8N Flow](screenshots/rice-workflow-diagram.png)
+*Current Flow of the N8N pipeline*
+
 ---
 
 ## Project Deliverables
