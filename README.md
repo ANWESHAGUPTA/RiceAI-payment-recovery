@@ -139,20 +139,6 @@ This isn't just a workflow. It's a full product case study.
 
 ---
 
-## AI Evaluation Highlights
-
-Prompt engineering matters. Here's what iterating on the Claude prompt revealed:
-
-**V1 Prompt**: Generic classification, 60% accuracy on edge cases
-
-**V2 Prompt**: Added failure context + structured JSON output, 85% accuracy
-
-**V3 Prompt**: Added customer history signals, 92% accuracy with consistent risk scoring
-
-Testing across 50+ simulated scenarios showed the AI correctly differentiates between temporary issues (retry safe) and critical failures (immediate human intervention needed).
-
----
-
 ## What I'd Build in V2
 
 **ML model** replacing LLM for risk scoring (lower latency, lower cost at scale)
@@ -176,6 +162,11 @@ Testing across 50+ simulated scenarios showed the AI correctly differentiates be
 | Recovery rate (AI assisted) | 30 to 40% (industry benchmark) |
 | **ROI per 1,000 failures** | **~$14,000 recovered for $3 in API costs** |
 
+The ROI math:
+1,000 failed payments x $47 average = $47,000 at risk
+Recovery rate of 30% = $14,100 recovered
+API cost: 1,000 calls x $0.003 = $3
+So you spend $3 to recover $14,000. That's roughly a 4,700x return.
 ---
 
 ## Running This Project
@@ -196,6 +187,4 @@ Stripe account (test mode), n8n cloud instance, Claude API key, HubSpot free CRM
 
 Built by **Anwesha Gupta**. I build the systems behind smart products.
 
-[anweshagupta.com](https://anweshagupta.com) | [Medium](https://medium.com/@iamanweshagupta)
-
-
+[anweshagupta.com](https://anweshagupta.com)
